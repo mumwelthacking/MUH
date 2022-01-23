@@ -78,75 +78,63 @@ void setup() {
 }
 
 void loop() {
+    float values[16];
 
-//SPS30
+    //SPS30
     int16_t ret; //return values, genutzt um fehler abzufangen
     struct sps30_measurement sps_out; //entält unsere Messdaten
-    
     ret = sps30_start_measurement();
     delay(5000);
-
     ret = sps30_read_measurement(&sps_out);
 
-    float measurement_values[16];
+    values[0] = sps_out.mc_1p0;
+    values[1] = sps_out.mc_2p5;
+    values[2] = sps_out.mc_4p0;
+    values[3] = sps_out.mc_10p0;
+    values[4] = sps_out.nc_0p5;
+    values[5] = sps_out.nc_1p0;
+    values[6] = sps_out.nc_2p5;
+    values[7] = sps_out.nc_4p0;
+    values[8] = sps_out.nc_10p0;
+    values[9] = sps_out.typical_particle_size;
     //for (byte i = 0; i < (sizeof(measurement_values) / sizeof(measurement_values[0])); i++) {
     //  measurement_values[i] = 
 
-    //SD
-    
-     myFile = SD.open("Messung.txt", FILE_WRITE);
-
-  // if the file opened okay, write to it:
-  if (myFile) {
-    myFile.print(millis());
-    myFile.print(" ");
-    myFile.print(sps_out.mc_1p0);
-    myFile.print(" ");
-    myFile.print(sps_out.mc_2p5);
-    myFile.print(" ");
-    myFile.print(sps_out.mc_4p0);
-    myFile.print(" ");
-    myFile.print(sps_out.mc_10p0);
-    myFile.print(" ");
-    myFile.print(sps_out.nc_0p5);
-    myFile.print(" ");
-    myFile.print(sps_out.nc_1p0);
-    myFile.print(" ");
-    myFile.print(sps_out.nc_2p5);
-    myFile.print(" ");
-    myFile.print(sps_out.nc_4p0);
-    myFile.print(" ");
-    myFile.print(sps_out.nc_10p0);
-    myFile.print(" ");
-    myFile.print(sps_out.typical_particle_size);
-    myFile.print(" ");
      //BME680
-     unsigned long endTime = bme.beginReading();
-  if (endTime == 0) {
-    Serial.println(F("Failed to begin reading :("));
-    return;
-  }
+    unsigned long endTime = bme.beginReading();
+    if (endTime == 0) {
+        Serial.println(F("Failed to begin reading :("));
+        return;
+    }
     delay(50); 
-  if (!bme.endReading()) {
-    Serial.println(F("Failed to complete reading :("));
-    return;
-  }
- myFile.print(bme.temperature);
-  myFile.print(" ");
-  myFile.print(bme.pressure);
-  myFile.print(" ");
-  myFile.print(bme.humidity);
-  myFile.print(" ");
-  myFile.print(bme.gas_resistance);
-  myFile.print(" ");
-  myFile.print(lightSensor.getLightIntensity());
-  myFile.print(" ");
-  float voltageValue,dbValue;
+    if (!bme.endReading()) {
+        Serial.println(F("Failed to complete reading :("));
+        return;
+    }
+    values[10] = bme.temperature;
+    values[11] = bme.pressure;
+    values[12] = bme.humidity;
+    values[13] = bme.gas_resistance;
+
+    //Light
+    values[14] = lightSensor.getLightIntensity();
+
+    // Sound
+    float voltageValue, dbValue;
     voltageValue = analogRead(SoundSensorPin) / 1024.0 * VREF;
     dbValue = voltageValue * 50.0;  //convert voltage to decibel value
-     myFile.print(dbValue,1);
-     myFile.print(" ");
-     myFile.println(millis());
+    value[15] = dbValue;
+
+    //SD
+    myFile = SD.open("Messung.txt", FILE_WRITE);
+
+    // if the file opened okay, write to it:
+    if (myFile) {
+      myFile.println(millis());
+      for (byte i = 0; i < (sizeof(values) / sizeof(values[0])); i++) {
+     
+    
+    
      
     // close the file:
     myFile.close();
