@@ -24,11 +24,10 @@
 //SPS30
 #include <sps30.h>
 
-
 // LoRaWAN
 #include <MKRWAN.h>
 #include "arduino_secrets.h"
-lora_band region = EU868;
+_lora_band region = EU868;
 LoRaModem modem(Serial1);
 
 //SD
