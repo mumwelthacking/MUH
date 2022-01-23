@@ -1,0 +1,37 @@
+syntax = "proto2";
+
+message Measurement {
+  optional uint32 millis = 1;
+
+  // PM
+  enum PMConcentrationType {
+    MASS = 1;
+    NUMBER = 2;
+  }
+  enum PMSize {
+    PM_0P5 = 1;
+    PM_1P0 = 2;
+    PM_2P5 = 3;
+    PM_4P0 = 4;
+    PM_10P0 = 5;
+  }
+  message PMConcentratration {
+    optional PMConcentrationType type = 1;
+    optional PMSize size = 2;
+    optional float value = 3;
+  }
+  repeated PMConcentratration pm_concentrations = 2;
+  optional float pm_typical_size = 3;
+
+  // BME680
+  optional float temperature = 4;
+  optional uint32 pressure = 5;
+  optional float humidity = 6;
+  optional uint32 gas_resistance = 7;
+
+  // Light
+  optional uint32 light_intensity = 8;
+
+  // Sound
+  optional float sound_level = 9;
+}
