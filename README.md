@@ -10,7 +10,7 @@
 |MH-Z19B|CO2|UART / PWM / Analog|Steffen|Ja!||
 |~~SM-UART-04L~~|Feinstaub|UART|Tim|Ja!||
 |SPS30|Feinstaub|I2C / UART|Fix, Tim||Ja!|
-|ZE27-O3|Ozon|I2C|Steffen?|||
+|ZE27-O3|Ozon|I2C|Steffen|Ja!|TODO|
 |DFROBOT SEN0232|Sound|Analog|Filipp|nein|Ja!|
 |SparkFun Elektret-Mikrofon|Sound|Analog?|Ali|||
 |mehr?||||||
