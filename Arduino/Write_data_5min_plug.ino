@@ -10,6 +10,8 @@
   Written by Limor Fried & Kevin Townsend for Adafruit Industries.
   BSD license, all text above must be included in any redistribution
  ***************************************************************************/
+#include <Streaming.h>
+
 //SD
 #include <SD.h>
 //BME680
@@ -45,11 +47,36 @@ Adafruit_BME680 bme; // I2C
 //BH1750
 BH1750 lightSensor = BH1750();
 
+#pragma pack(push, 1)
+struct Measurement {
+  uint8_t v;
+
+  float pm_mass_1p0;
+  float pm_mass_2p5;
+  float pm_mass_4p0;
+  float pm_mass_10p0;
+  float pm_count_0p5;
+  float pm_count_1p0;
+  float pm_count_2p5;
+  float pm_count_4p0;
+  float pm_count_10p0;
+
+  float temperature_c;
+  uint32_t pressure_pa;
+  float humidity_relpct;
+  uint32_t gas_resistance_ohm;
+
+  uint16_t light_lux;
+
+  float sound_dba;
+};
+#pragma pack(pop)
+
 void setup() {
   //SD
   !SD.begin(4) ;
 
-  
+
   //SPS30
   int16_t ret; //return values, genutzt um fehler abzufangen
   Serial.begin(9600);
@@ -58,7 +85,7 @@ void setup() {
   //BME680
   //BH1750
   lightSensor.begin();
-   while (sps30_probe() != 0) {
+  while (sps30_probe() != 0) {
     Serial.println("SPS sensor nicht gefunden..");
     delay(1000);
   }
@@ -78,72 +105,77 @@ void setup() {
 }
 
 void loop() {
-    float values[16];
+  Measurement current_measurement = {};
 
-    //SPS30
-    int16_t ret; //return values, genutzt um fehler abzufangen
-    struct sps30_measurement sps_out; //entält unsere Messdaten
-    ret = sps30_start_measurement();
-    delay(5000);
-    ret = sps30_read_measurement(&sps_out);
+  //SPS30
+  int16_t ret; //return values, genutzt um fehler abzufangen
+  struct sps30_measurement sps_out; //entält unsere Messdaten
+  ret = sps30_start_measurement();
+  delay(5000);
+  ret = sps30_read_measurement(&sps_out);
 
-    values[0] = sps_out.mc_1p0;
-    values[1] = sps_out.mc_2p5;
-    values[2] = sps_out.mc_4p0;
-    values[3] = sps_out.mc_10p0;
-    values[4] = sps_out.nc_0p5;
-    values[5] = sps_out.nc_1p0;
-    values[6] = sps_out.nc_2p5;
-    values[7] = sps_out.nc_4p0;
-    values[8] = sps_out.nc_10p0;
-    values[9] = sps_out.typical_particle_size;
-    //for (byte i = 0; i < (sizeof(measurement_values) / sizeof(measurement_values[0])); i++) {
-    //  measurement_values[i] = 
+  current_measurement.pm_mass_1p0 = sps_out.mc_1p0;
+  current_measurement.pm_mass_2p5 = sps_out.mc_2p5;
+  current_measurement.pm_mass_4p0 = sps_out.mc_4p0;
+  current_measurement.pm_mass_10p0 = sps_out.mc_10p0;
+  current_measurement.pm_count_0p5 = sps_out.nc_1p5;
+  current_measurement.pm_count_1p0 = sps_out.nc_1p0;
+  current_measurement.pm_count_2p5 = sps_out.nc_2p5;
+  current_measurement.pm_count_4p0 = sps_out.nc_4p0;
+  current_measurement.pm_count_10p0 = sps_out.nc_10p0;
 
-     //BME680
-    unsigned long endTime = bme.beginReading();
-    if (endTime == 0) {
-        Serial.println(F("Failed to begin reading :("));
-        return;
-    }
-    delay(50); 
-    if (!bme.endReading()) {
-        Serial.println(F("Failed to complete reading :("));
-        return;
-    }
-    values[10] = bme.temperature;
-    values[11] = bme.pressure;
-    values[12] = bme.humidity;
-    values[13] = bme.gas_resistance;
+  sps30_stop_measurement();
 
-    //Light
-    values[14] = lightSensor.getLightIntensity();
+  //BME680
+  unsigned long endTime = bme.beginReading();
+  if (endTime == 0) {
+    Serial.println(F("Failed to begin reading :("));
+    return;
+  }
+  delay(50); 
+  if (!bme.endReading()) {
+    Serial.println(F("Failed to complete reading :("));
+    return;
+  }
+  current_measurement.temperature_c = bme.temperature;
+  current_measurement.pressure_pa = bme.pressure;
+  current_measurement.humidity_relpct = bme.humidity;
+  current_measurement.gas_resistance_ohm = bme.gas_resistance;
 
-    // Sound
-    float voltageValue, dbValue;
-    voltageValue = analogRead(SoundSensorPin) / 1024.0 * VREF;
-    dbValue = voltageValue * 50.0;  //convert voltage to decibel value
-    value[15] = dbValue;
+  //Light
+  current_measurement.light_lux = lightSensor.getLightIntensity();
 
-    //SD
-    myFile = SD.open("Messung.txt", FILE_WRITE);
+  // Sound
+  float voltageValue, dbValue;
+  voltageValue = analogRead(SoundSensorPin) / 1024.0 * VREF;
+  current_measurement.sound_dba = voltageValue * 50.0;  //convert voltage to decibel value
 
-    // if the file opened okay, write to it:
-    if (myFile) {
-      myFile.println(millis());
-      for (byte i = 0; i < (sizeof(values) / sizeof(values[0])); i++) {
-     
-    
-    
-     
+  // SD
+  myFile = SD.open("Messung.txt", FILE_WRITE);
+
+  // if the file opened okay, write to it:
+  if (myFile) {
+    myFile << millis() << ","
+      << current_measurement.pm_mass_1p0 << ","
+      << current_measurement.pm_mass_2p5 << ","
+      << current_measurement.pm_mass_4p0 << ","
+      << current_measurement.pm_mass_10p0 << ","
+      << current_measurement.pm_count_0p5 << ","
+      << current_measurement.pm_count_1p0 << ","
+      << current_measurement.pm_count_2p5 << ","
+      << current_measurement.pm_count_4p0 << ","
+      << current_measurement.pm_count_10p0 << ","
+      << current_measurement.temperature_c << ","
+      << current_measurement.pressure_pa << ","
+      << current_measurement.humidity_relpct << ","
+      << current_measurement.gas_resistance_ohm << ","
+      << current_measurement.light_lux << ","
+      << current_measurement.sound_dba << "\r\n";
     // close the file:
     myFile.close();
   } else {
-    // if the file didn't open, print an error:
-    Serial.println("error opening test.txt");
+    Serial.println("error opening Messung.txt");
   }
 
-      sps30_stop_measurement();
-    
-  delay(350000);
+  delay(900000);
 }
