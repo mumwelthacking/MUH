@@ -118,7 +118,7 @@ void loop() {
   current_measurement.pm_mass_2p5 = sps_out.mc_2p5;
   current_measurement.pm_mass_4p0 = sps_out.mc_4p0;
   current_measurement.pm_mass_10p0 = sps_out.mc_10p0;
-  current_measurement.pm_count_0p5 = sps_out.nc_1p5;
+  current_measurement.pm_count_0p5 = sps_out.nc_0p5;
   current_measurement.pm_count_1p0 = sps_out.nc_1p0;
   current_measurement.pm_count_2p5 = sps_out.nc_2p5;
   current_measurement.pm_count_4p0 = sps_out.nc_4p0;
