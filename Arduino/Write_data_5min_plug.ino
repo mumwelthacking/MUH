@@ -81,6 +81,7 @@ void setup() {
   int16_t ret; //return values, genutzt um fehler abzufangen
   Serial.begin(9600);
   delay(2000);
+  //Sensors
   sensirion_i2c_init(); //initialisierung
   //BME680
   //BH1750
