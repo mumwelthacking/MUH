@@ -154,8 +154,9 @@ void loop() {
    if(serial) Serial.println("Trying to send message");
    //connected = connectToNetwork();
    modem.beginPacket();
-   sends[0]++;
-   modem.write(sends, SEND_BUF);
+   sends[0] = 3;
+   sends[1]++;
+   modem.write(sends, SEND_BUF*2);
    //modem.print("Heinrich");
    succ = modem.endPacket(true);
    if (succ) {
