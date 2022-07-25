@@ -38,7 +38,7 @@ File myFile;
 
 //SEN0232
 #define SoundSensorPin A1  //this pin read the analog voltage from the sound level meter
-#define VREF  5.0  //voltage on AREF pin,default:operating voltage
+#define VREF  3.3  //voltage on AREF pin,default:operating voltage
 
 Adafruit_BME680 bme; // I2C
 //Adafruit_BME680 bme(BME_CS); // hardware SPI
@@ -180,11 +180,11 @@ void loop() {
       Serial.println("error opening Messung.txt");
     }
     
-    delay(1000);
+    delay(610); //empirische daten
   }
 
   //SPS30 standby
   sps30_stop_measurement();
 
-  delay(294000);
+  delay(293957); //empirische daten
 }
